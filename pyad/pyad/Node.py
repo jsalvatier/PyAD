@@ -152,12 +152,13 @@ class DependentNode (Node):
     def _get_value(self):
         self._set_value(self.function(**get_value_dict(self.parents)))
         
-        return Node.get_value(self)
+        return Node._get_value(self)
     value = property(_get_value)
     
-    _derivatives = defaultdict(lambda : ZeroNode)
+    _derivatives = None
     def _d(self):
         if not self._derivatives: 
+            self._derivatives = defaultdict(lambda : ZeroNode)
             for function_parent, parent_node in self.parents.iteritems():
                 for independent, parent_derivative_node in parent_node.d.iteritems():
 

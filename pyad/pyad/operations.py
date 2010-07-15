@@ -128,6 +128,18 @@ def div(self, other):
                      function =           lambda a, b: a / b,
                      derivatives = {'a' : lambda a, b: 1 / b,
                                     'b' : lambda a, b:-a / b**2  })
+    
+def pow(self, other):
+    if self  is ZeroNode : return ZeroNode
+    if other is UnityNode: return self
+    
+    if other is ZeroNode: raise ZeroDivisionError("division by ZeroNode")
+    
+    return InfixNode(self, '**', other,
+                     function =           lambda a, b: a ** b,
+                     derivatives ={'a' : lambda a, b: b * a**(b - 1),
+                                   'b' : lambda a, b: log(a) * a**b   } )
+    
 numpy_operators = {'neg' : neg,
                    'add' : add,
                    'sub' : sub,
@@ -168,14 +180,20 @@ arcsinh_jacobians = {'x' : lambda x : (1+x**2)**-.5}
 arccosh_jacobians = {'x' : lambda x : (x+1)**-.5*(x-1.0)**-.5}
 arctanh_jacobians = {'x' : lambda x : 1.0/(1-x**2) }
 
-
+def wrap(func):
+    def wrapped(x):
+        return func(x)
+    wrapped.__name__ = func.__name__
+    return wrapped
 
 for function_name in transformation_deterministics:
     func = find_element(function_name, numpy, error_on_fail = True)
     
+    
+    
     jacobians = find_element(function_name + "_jacobians", locals(), error_on_fail = True)
     
     locals()[function_name] = FunctionNodeFactory(function_name, 
-                                                  lambda x: func(x), 
+                                                  wrap(func), 
                                                   jacobians,
                                                   transformation_map)
